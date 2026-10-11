@@ -1,0 +1,21 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# User generated audio exports
+exports/*.mp3
+exports/*.wav
+!exports/.gitkeep
+
+# User personal recorded voice samples (keep directory & template)
+custom_voices/*.wav
+custom_voices/*.mp3
+custom_voices/*.m4a
+!custom_voices/.gitkeep
+
+# Temporary files
+*.tmp
+*.log
+.DS_Store
+Thumbs.db

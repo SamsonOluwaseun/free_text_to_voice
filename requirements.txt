@@ -1,0 +1,9 @@
+customtkinter>=6.0.0
+soundfile>=0.14.0
+sounddevice>=0.5.6
+edge-tts>=7.2.8
+pyttsx3>=2.99
+scipy>=1.14.0
+numpy>=2.0.0
+torch>=2.0.0
+torchaudio>=2.0.0
