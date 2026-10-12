@@ -2,8 +2,9 @@
 Samlytics VoiceStudio — Local Text-to-Voice & Storytelling App
 Branded for Samlytics Data Services with a clean, high-clarity Light theme.
 Supports 5 curated neural voice presets (including Nigerian Professional Male),
-local custom voice cloning from MP3/WAV uploads, 10 storytelling background
-instrumentals with smart ducking, real-time playback, and MP3/WAV export.
+local custom voice cloning from MP3/WAV uploads AND live microphone recording,
+word-by-word .SRT subtitle generation for video creators, script importing,
+10 storytelling background instrumentals with smart ducking, and MP3/WAV export.
 100% Free & Local • Zero Subscription Fees.
 """
 
@@ -22,10 +23,13 @@ from audio_mixer import AudioMixer
 from player import AudioPlayer
 from tracks_generator import ensure_starter_tracks
 from voice_cloner import VoiceCloner
+from recorder import AudioRecorder
+from subtitle_engine import SubtitleEngine
+from model_manager import ModelManager
 
-CUSTOM_VOICE_LABEL = "🎙️ My Uploaded Voice (Custom Clone)"
+CUSTOM_VOICE_LABEL = "🎙️ My Voice (Custom Clone / Recording)"
 
-# Samlytics Brand Colors (from Brand Guidelines)
+# Samlytics Brand Colors
 SAM_BLUE = "#4392F1"
 SAM_BLUE_HOVER = "#2563EB"
 SAM_DARK = "#00212B"
@@ -37,7 +41,6 @@ CARD_BG = "#FFFFFF"
 BORDER_COLOR = "#E2E8F0"
 TEXT_MUTED = "#64748B"
 
-# Configure CustomTkinter Appearance
 ctk.set_appearance_mode("Light")
 ctk.set_default_color_theme("blue")
 
@@ -63,12 +66,17 @@ SAMPLE_LECTURE = (
     "is where the real magic happens. Let us dive into our first case study."
 )
 
+MIC_READING_PROMPT = (
+    "Hello, my name is [Your Name], and I am recording my voice sample for Samlytics VoiceStudio "
+    "to demonstrate clear speech synthesis, natural rhythm, and vocal resonance."
+)
+
 class VoiceStudioApp(ctk.CTk):
     def __init__(self):
         super().__init__()
 
         self.title("Samlytics VoiceStudio — Free Local Text to Voice App")
-        self.geometry("1140x840")
+        self.geometry("1160x860")
         self.minsize(980, 720)
         self.configure(fg_color=BG_LIGHT)
 
@@ -88,28 +96,28 @@ class VoiceStudioApp(ctk.CTk):
             except Exception:
                 pass
 
-        # Ensure starter tracks exist
         ensure_starter_tracks(self.tracks_dir)
 
-        # Initialize engines
+        # Engines
         self.tts = TTSEngine()
         self.cloner = VoiceCloner(self.custom_voices_dir)
         self.mixer = AudioMixer(self.tracks_dir)
         self.player = AudioPlayer(on_finish_callback=self._on_player_finish)
         self.sample_player = AudioPlayer()
+        self.recorder = AudioRecorder(sample_rate=24000)
 
         # Audio state
         self.current_audio_data = None
         self.current_sr = 24000
         self.is_synthesizing = False
         self.user_is_scrubbing = False
+        self.is_recording_mic = False
 
         # Build UI
         self._build_header()
         self._build_main_layout()
         self._build_bottom_bar()
 
-        # Scrubber update timer
         self._update_player_ui()
 
     def _build_header(self):
@@ -119,7 +127,6 @@ class VoiceStudioApp(ctk.CTk):
         left_brand = ctk.CTkFrame(header_frame, fg_color="transparent")
         left_brand.pack(side="left", padx=15, pady=10)
 
-        # Brand Logo Icon
         logo_png_path = os.path.join(self.assets_dir, "logo_square.png")
         if os.path.exists(logo_png_path):
             try:
@@ -143,17 +150,15 @@ class VoiceStudioApp(ctk.CTk):
 
         subtitle = ctk.CTkLabel(
             title_box,
-            text="Free Local Text-to-Voice • Neural Presets • Voice Cloning • Background Music Studio",
+            text="Free Local Text-to-Voice • Mic Recording • Custom Cloning • .SRT Subtitles • Storytelling Music",
             font=ctk.CTkFont(size=12),
             text_color=TEXT_MUTED
         )
         subtitle.pack(anchor="w")
 
-        # Right Action Buttons
         right_box = ctk.CTkFrame(header_frame, fg_color="transparent")
         right_box.pack(side="right", padx=15, pady=10)
 
-        # Brand Badge
         badge = ctk.CTkLabel(
             right_box,
             text="100% FREE & LOCAL",
@@ -227,6 +232,17 @@ class VoiceStudioApp(ctk.CTk):
             command=self._paste_text
         )
         self.btn_paste.pack(side="right", padx=(5, 0))
+
+        self.btn_import_doc = ctk.CTkButton(
+            tb_frame,
+            text="📂 Open File (.txt/.md)",
+            height=26,
+            fg_color="#F1F5F9",
+            hover_color="#E2E8F0",
+            text_color=SAM_DARK,
+            command=self._import_text_file
+        )
+        self.btn_import_doc.pack(side="right", padx=(5, 0))
 
         # Sample Templates Row
         tpl_row = ctk.CTkFrame(left_panel, fg_color="transparent")
@@ -351,7 +367,7 @@ class VoiceStudioApp(ctk.CTk):
         )
         self.voice_desc_label.pack(anchor="w", padx=12, pady=(2, 6))
 
-        # Custom Voice Upload Box (shown if Custom Clone is selected)
+        # Custom Voice Card (shown if Custom Clone is selected)
         self.custom_voice_box = ctk.CTkFrame(right_panel, corner_radius=10, fg_color="#F8FAFC", border_width=1, border_color=BORDER_COLOR)
         
         cv_header = ctk.CTkFrame(self.custom_voice_box, fg_color="transparent")
@@ -359,7 +375,7 @@ class VoiceStudioApp(ctk.CTk):
 
         cv_title = ctk.CTkLabel(
             cv_header,
-            text="🎙️ Custom Voice Clone",
+            text="🎙️ Custom Voice Studio",
             font=ctk.CTkFont(size=13, weight="bold"),
             text_color=SAM_DARK
         )
@@ -367,7 +383,7 @@ class VoiceStudioApp(ctk.CTk):
 
         self.custom_voice_status_label = ctk.CTkLabel(
             self.custom_voice_box,
-            text="Upload an MP3/WAV (3-30s) to clone your voice.",
+            text="Record or upload audio (5-30s) to clone your voice.",
             font=ctk.CTkFont(size=12),
             text_color=TEXT_MUTED,
             wraplength=330,
@@ -375,12 +391,45 @@ class VoiceStudioApp(ctk.CTk):
         )
         self.custom_voice_status_label.pack(anchor="w", padx=12, pady=(0, 6))
 
+        # Live Recording Box (Hidden until user clicks Record)
+        self.record_panel = ctk.CTkFrame(self.custom_voice_box, fg_color="#FEF2F2", corner_radius=8, border_width=1, border_color="#FECACA")
+        
+        self.record_timer_label = ctk.CTkLabel(
+            self.record_panel,
+            text="🔴 Recording: 00:00 (Speak clearly for 10-15s)",
+            font=ctk.CTkFont(size=12, weight="bold"),
+            text_color="#DC2626"
+        )
+        self.record_timer_label.pack(anchor="w", padx=10, pady=(6, 2))
+
+        prompt_box = ctk.CTkLabel(
+            self.record_panel,
+            text=f"Sample to read:\n\"{MIC_READING_PROMPT}\"",
+            font=ctk.CTkFont(size=11),
+            text_color=SAM_DARK,
+            wraplength=310,
+            justify="left"
+        )
+        prompt_box.pack(anchor="w", padx=10, pady=(0, 6))
+
+        # Buttons row: Record Mic + Upload File + Listen
         cv_btn_row = ctk.CTkFrame(self.custom_voice_box, fg_color="transparent")
         cv_btn_row.pack(fill="x", padx=12, pady=(0, 6))
 
+        self.btn_record_voice = ctk.CTkButton(
+            cv_btn_row,
+            text="🔴 Record Mic",
+            height=30,
+            fg_color="#DC2626",
+            hover_color="#B91C1C",
+            text_color="#FFFFFF",
+            command=self._toggle_mic_recording
+        )
+        self.btn_record_voice.pack(side="left", expand=True, fill="x", padx=(0, 4))
+
         self.btn_upload_voice = ctk.CTkButton(
             cv_btn_row,
-            text="📤 Upload Voice Recording",
+            text="📤 Upload Audio",
             height=30,
             fg_color="#059669",
             hover_color="#047857",
@@ -392,7 +441,7 @@ class VoiceStudioApp(ctk.CTk):
         self.btn_preview_sample = ctk.CTkButton(
             cv_btn_row,
             text="🔊 Listen",
-            width=65,
+            width=60,
             height=30,
             state="disabled",
             fg_color="#E2E8F0",
@@ -401,6 +450,31 @@ class VoiceStudioApp(ctk.CTk):
             command=self._preview_custom_voice_sample
         )
         self.btn_preview_sample.pack(side="left")
+
+        # Deep AI Upgrade Section (Optional Tier 2)
+        deep_frame = ctk.CTkFrame(self.custom_voice_box, fg_color="#FFFFFF", corner_radius=6, border_width=1, border_color="#CBD5E1")
+        deep_frame.pack(fill="x", padx=12, pady=(4, 6))
+
+        self.deep_status_label = ctk.CTkLabel(
+            deep_frame,
+            text="⚡ Fast Timbre Cloner Active (Instant)\nWant ultra-realistic flow-matched cloning?",
+            font=ctk.CTkFont(size=11),
+            text_color=SAM_DARK,
+            justify="left"
+        )
+        self.deep_status_label.pack(side="left", padx=8, pady=4)
+
+        self.btn_deep_upgrade = ctk.CTkButton(
+            deep_frame,
+            text="🚀 Deep AI Setup",
+            height=26,
+            width=110,
+            fg_color="#0284C7",
+            hover_color="#0369A1",
+            text_color="#FFFFFF",
+            command=self._prompt_deep_ai_install
+        )
+        self.btn_deep_upgrade.pack(side="right", padx=8, pady=4)
 
         cv_notice = ctk.CTkLabel(
             self.custom_voice_box,
@@ -595,7 +669,7 @@ class VoiceStudioApp(ctk.CTk):
         self.btn_play_pause = ctk.CTkButton(
             ctrl_row,
             text="▶ Play",
-            width=90,
+            width=85,
             height=40,
             state="disabled",
             fg_color="#059669",
@@ -608,7 +682,7 @@ class VoiceStudioApp(ctk.CTk):
         self.btn_stop = ctk.CTkButton(
             ctrl_row,
             text="⏹ Stop",
-            width=80,
+            width=75,
             height=40,
             state="disabled",
             fg_color="#64748B",
@@ -618,11 +692,24 @@ class VoiceStudioApp(ctk.CTk):
         )
         self.btn_stop.pack(side="left", padx=(0, 15))
 
-        # Export Buttons
+        # Export Buttons (WAV, MP3, and SRT)
+        self.btn_export_srt = ctk.CTkButton(
+            ctrl_row,
+            text="📝 Download .SRT",
+            width=130,
+            height=40,
+            state="disabled",
+            fg_color="#0284C7",
+            hover_color="#0369A1",
+            text_color="#FFFFFF",
+            command=self._export_srt_file
+        )
+        self.btn_export_srt.pack(side="right", padx=(6, 0))
+
         self.btn_export_wav = ctk.CTkButton(
             ctrl_row,
             text="💾 Download WAV",
-            width=135,
+            width=130,
             height=40,
             state="disabled",
             fg_color="#F1F5F9",
@@ -637,7 +724,7 @@ class VoiceStudioApp(ctk.CTk):
         self.btn_export_mp3 = ctk.CTkButton(
             ctrl_row,
             text="💾 Download MP3",
-            width=135,
+            width=130,
             height=40,
             state="disabled",
             fg_color="#D97706",
@@ -691,7 +778,7 @@ class VoiceStudioApp(ctk.CTk):
         )
         self.status_label.pack(fill="x")
 
-    # --- UI Event Handlers ---
+    # --- UI Event Handlers & Document Importer ---
 
     def _on_text_change(self, event=None):
         content = self.text_editor.get("1.0", "end-1c")
@@ -710,6 +797,34 @@ class VoiceStudioApp(ctk.CTk):
             self._on_text_change()
         except Exception:
             pass
+
+    def _import_text_file(self):
+        filetypes = [
+            ("Text & Markdown Files", "*.txt *.md *.doc"),
+            ("Text Files", "*.txt"),
+            ("Markdown Files", "*.md"),
+            ("All Files", "*.*")
+        ]
+        chosen = filedialog.askopenfilename(title="Open Script / Document File", filetypes=filetypes)
+        if chosen:
+            try:
+                content = None
+                for enc in ["utf-8", "cp1252", "latin-1"]:
+                    try:
+                        with open(chosen, "r", encoding=enc) as f:
+                            content = f.read()
+                        break
+                    except UnicodeDecodeError:
+                        continue
+                if content is not None:
+                    self.text_editor.delete("1.0", "end")
+                    self.text_editor.insert("1.0", content)
+                    self._on_text_change()
+                    self.status_label.configure(text=f"Loaded script: {os.path.basename(chosen)}")
+                else:
+                    messagebox.showerror("Read Error", "Could not decode text file encoding.")
+            except Exception as e:
+                messagebox.showerror("File Error", f"Could not read file:\n{e}")
 
     def _load_sample_story(self):
         self.text_editor.delete("1.0", "end")
@@ -733,7 +848,7 @@ class VoiceStudioApp(ctk.CTk):
     def _on_voice_selected(self, choice):
         if choice == CUSTOM_VOICE_LABEL:
             self.voice_desc_label.configure(
-                text="Synthesizes speech using your uploaded voice timbre, pitch, and acoustic resonance."
+                text="Synthesizes speech using your custom voice timbre, pitch, and acoustic resonance."
             )
             self.custom_voice_box.pack(fill="x", padx=12, pady=(2, 10))
             self._update_custom_voice_status()
@@ -756,10 +871,65 @@ class VoiceStudioApp(ctk.CTk):
             self.btn_preview_sample.configure(state="normal")
         elif hasattr(self, "custom_voice_status_label"):
             self.custom_voice_status_label.configure(
-                text="No voice uploaded yet. Upload an MP3/WAV (3-30s) to clone your voice.",
+                text="Record or upload audio (5-30s) to clone your voice.",
                 text_color=TEXT_MUTED
             )
             self.btn_preview_sample.configure(state="disabled")
+
+        if hasattr(self, "deep_status_label"):
+            if ModelManager.is_deep_engine_installed():
+                self.deep_status_label.configure(text="🚀 Deep AI Neural Engine Installed & Ready!")
+                self.btn_deep_upgrade.configure(text="Active", state="disabled")
+            else:
+                self.deep_status_label.configure(text="⚡ Fast Timbre Cloner Active (Instant)\nWant ultra-realistic flow-matched cloning?")
+                self.btn_deep_upgrade.configure(text="🚀 Deep AI Setup", state="normal")
+
+    # --- Live Microphone Recording Workflow ---
+
+    def _toggle_mic_recording(self):
+        if not self.is_recording_mic:
+            # Start Recording
+            try:
+                self.recorder.start_recording()
+                self.is_recording_mic = True
+                self.btn_record_voice.configure(text="⏹ Stop Recording", fg_color="#B91C1C")
+                self.record_panel.pack(fill="x", padx=12, pady=(0, 6))
+                self.btn_upload_voice.configure(state="disabled")
+                self._update_recording_timer()
+            except Exception as e:
+                messagebox.showerror("Microphone Error", f"Could not access microphone:\n{e}")
+        else:
+            # Stop Recording & Process
+            self.is_recording_mic = False
+            self.btn_record_voice.configure(text="🔴 Record Mic", fg_color="#DC2626")
+            self.record_panel.pack_forget()
+            self.btn_upload_voice.configure(state="normal")
+
+            temp_rec_path = os.path.join(self.custom_voices_dir, "my_mic_recording.wav")
+            try:
+                data, dur = self.recorder.stop_recording(temp_rec_path)
+                if dur < 2.0:
+                    messagebox.showwarning("Recording Too Short", "Please record for at least 5-10 seconds for accurate voice cloning.")
+                    return
+                profile = self.cloner.register_uploaded_voice(temp_rec_path, voice_name="My Mic Recording")
+                self._update_custom_voice_status()
+                messagebox.showinfo(
+                    "Voice Cloned Successfully",
+                    f"Captured {dur:.1f}s of your voice!\n"
+                    f"Detected pitch: {profile['median_pitch_hz']} Hz\n"
+                    f"Matched vocal register: {profile['base_preset']}\n\n"
+                    "Your personal voice profile is now active and ready for conversion!"
+                )
+            except Exception as e:
+                messagebox.showerror("Recording Error", f"Could not save voice recording:\n{e}")
+
+    def _update_recording_timer(self):
+        if self.is_recording_mic:
+            sec = int(self.recorder.get_elapsed_seconds())
+            m = sec // 60
+            s = sec % 60
+            self.record_timer_label.configure(text=f"🔴 Recording: {m:02d}:{s:02d} (Speak clearly for 10-15s)")
+            self.after(200, self._update_recording_timer)
 
     def _upload_custom_voice(self):
         filetypes = [
@@ -769,7 +939,7 @@ class VoiceStudioApp(ctk.CTk):
             ("All Files", "*.*")
         ]
         chosen = filedialog.askopenfilename(
-            title="Select Your Voice Recording (3-30 seconds)",
+            title="Select Your Voice Recording (5-30 seconds)",
             filetypes=filetypes
         )
         if chosen:
@@ -796,6 +966,39 @@ class VoiceStudioApp(ctk.CTk):
                 self.sample_player.play()
             except Exception as e:
                 messagebox.showerror("Playback Error", f"Could not play sample audio:\n{e}")
+
+    def _prompt_deep_ai_install(self):
+        specs = ModelManager.get_system_requirements()
+        msg = (
+            f"Would you like to install the {specs['name']}?\n\n"
+            f"• Disk Space Required: ~{specs['disk_required_gb']} GB\n"
+            f"• Recommended RAM: {specs['ram_required_gb']} GB+\n"
+            f"• Performance Note: {specs['speed_note']}\n"
+            f"• Cost: 100% Free Forever\n\n"
+            "This will download packages in the background while you continue using the app."
+        )
+        if messagebox.askyesno("Deep AI Voice Cloner Setup", msg):
+            self.btn_deep_upgrade.configure(state="disabled", text="Installing...")
+            self.status_label.configure(text="Installing Deep AI Engine in background... Please wait.")
+
+            def _on_prog(line):
+                self.after(0, lambda: self.status_label.configure(text=line))
+
+            def _on_succ():
+                self.after(0, lambda: (
+                    self._update_custom_voice_status(),
+                    messagebox.showinfo("Deep AI Ready", "Deep Neural Voice Cloning engine has been installed successfully!"),
+                    self.status_label.configure(text="Deep AI Engine ready.")
+                ))
+
+            def _on_err(err):
+                self.after(0, lambda: (
+                    self._update_custom_voice_status(),
+                    messagebox.showerror("Installation Error", f"Could not install Deep AI:\n{err}"),
+                    self.status_label.configure(text="Deep AI installation cancelled or failed.")
+                ))
+
+            ModelManager.install_deep_engine_async(on_progress=_on_prog, on_success=_on_succ, on_error=_on_err)
 
     def _on_texture_change(self, value):
         val = int(round(value))
@@ -876,12 +1079,13 @@ class VoiceStudioApp(ctk.CTk):
         self.btn_stop.configure(state="disabled")
         self.btn_export_mp3.configure(state="disabled")
         self.btn_export_wav.configure(state="disabled")
+        self.btn_export_srt.configure(state="disabled")
 
         self.is_synthesizing = True
         self.btn_generate.configure(state="disabled", text="⏳ Converting...")
         self.progress_bar.pack(fill="x", pady=(0, 4))
         self.progress_bar.start()
-        self.status_label.configure(text="Synthesizing audio... please wait.")
+        self.status_label.configure(text="Synthesizing audio and capturing timestamps... please wait.")
 
         voice_name = self.voice_var.get()
         speed_mult = round(self.speed_slider.get(), 2)
@@ -902,7 +1106,7 @@ class VoiceStudioApp(ctk.CTk):
         try:
             if voice_name == CUSTOM_VOICE_LABEL:
                 if not self.cloner.has_uploaded_voice():
-                    raise RuntimeError("Please upload an MP3 or WAV recording of your voice first using the 'Upload Voice Recording' button.")
+                    raise RuntimeError("Please record or upload a voice sample first using the 'Record Mic' or 'Upload Audio' button.")
                 self.after(0, lambda: self.status_label.configure(
                     text="Cloning your voice and synthesizing speech on CPU... please wait (~15-30s)."
                 ))
@@ -937,10 +1141,11 @@ class VoiceStudioApp(ctk.CTk):
         self.btn_stop.configure(state="normal")
         self.btn_export_mp3.configure(state="normal")
         self.btn_export_wav.configure(state="normal")
+        self.btn_export_srt.configure(state="normal")
 
         dur = self.player.get_duration()
         self.status_label.configure(
-            text=f"Audio generated successfully! Duration: {self._format_time(dur)}. Click Play or Download below."
+            text=f"Audio generated successfully! Duration: {self._format_time(dur)}. Click Play, Download, or Export Subtitles."
         )
 
         self._toggle_playback()
@@ -1046,6 +1251,46 @@ class VoiceStudioApp(ctk.CTk):
                     os.startfile(os.path.dirname(save_path))
             except Exception as e:
                 messagebox.showerror("Export Failed", f"Failed to save audio file:\n{e}")
+
+    def _export_srt_file(self):
+        text = self.text_editor.get("1.0", "end-1c").strip()
+        dur = self.player.get_duration()
+
+        if dur <= 0 or not text:
+            messagebox.showwarning("No Subtitles", "Please convert text to voice first before generating subtitles.")
+            return
+
+        # Check if we have exact boundaries from edge-tts
+        if hasattr(self.tts, "last_boundaries") and self.tts.last_boundaries:
+            srt_content = SubtitleEngine.generate_srt_from_boundaries(self.tts.last_boundaries, dur)
+        else:
+            srt_content = SubtitleEngine.generate_srt_from_text_and_duration(text, dur)
+
+        default_filename = f"samlytics_subtitles_{time.strftime('%Y%m%d_%H%M%S')}.srt"
+        filetypes = [("SubRip Subtitle (.srt)", "*.srt"), ("All Files", "*.*")]
+
+        save_path = filedialog.asksaveasfilename(
+            title="Save Subtitle (.SRT) File",
+            initialdir=self.exports_dir,
+            initialfile=default_filename,
+            filetypes=filetypes,
+            defaultextension=".srt"
+        )
+
+        if save_path:
+            try:
+                SubtitleEngine.save_srt_file(srt_content, save_path)
+                self.status_label.configure(text=f"Exported subtitles: {os.path.basename(save_path)}")
+                resp = messagebox.askyesno(
+                    "Subtitles Exported",
+                    f"Saved .SRT file successfully!\n\nLocation: {save_path}\n\n"
+                    "You can drag and drop this file directly into CapCut, Premiere Pro, or YouTube.\n\n"
+                    "Open containing folder?"
+                )
+                if resp:
+                    os.startfile(os.path.dirname(save_path))
+            except Exception as e:
+                messagebox.showerror("Export Error", f"Could not save subtitle file:\n{e}")
 
     @staticmethod
     def _format_time(seconds: float) -> str:

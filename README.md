@@ -1,7 +1,7 @@
 # 🎙️ Samlytics VoiceStudio
 
 <div align="center">
-  <img src="assets/logo_square.png" width="100" alt="Samlytics Logo" />
+  <img src="assets/product_logo.png" width="120" alt="Samlytics VoiceStudio Icon" />
   <h3>Free Local Text-to-Voice & Storytelling Desktop Studio</h3>
   <p><b>Democratizing voice synthesis, technical education, and storytelling with a human touch.</b></p>
   <p>100% Free Forever • Zero Subscriptions • Runs Completely on Your Laptop</p>
@@ -19,20 +19,35 @@ Want to use Samlytics VoiceStudio as a normal desktop app on your laptop without
    - Right-click the downloaded `.zip` file and select **Extract All...**
 3. **Run the 1-Click Installer**:
    - Open the extracted folder and double-click **`install_app.bat`**.
-   - It will install dependencies and **automatically create a desktop shortcut** named **"Samlytics VoiceStudio"** with the official brand icon on your Windows Desktop!
+   - It will install dependencies and **automatically create a desktop shortcut** named **"Samlytics VoiceStudio"** with the official product icon on your Windows Desktop!
 
 > 🎉 **Done!** Whenever you want to use the app, just double-click the **Samlytics VoiceStudio** icon on your Desktop.
 
 ---
 
-## ✨ What Samlytics VoiceStudio Can Help You Do
+## ✨ Features & Capabilities
 
 ### 1. 🎓 Explain Complex Technical Concepts Simply
 * Powered by the **Nigerian Professional Male Voice (`Abeo Neural`)**:
   * Crisp, engaging, articulate delivery built specifically for tutorials, tech explainers, and teaching data/software concepts to non-technical audiences.
   * Includes a 1-click **"💡 Tech Tutorial"** template demonstrating how to explain concepts like cloud computing and APIs using everyday real-world analogies.
 
-### 2. 📖 Immersive Storytelling & Audiobooks
+### 2. 🎙️ Custom Voice Cloning (Live Mic & Audio Upload)
+* **Live In-App Microphone Recording**: Click **"🔴 Record from Mic"**, record 5–30 seconds of your voice directly in the app with real-time countdown, and clone immediately!
+* **Audio File Upload**: Or upload an existing `.wav` or `.mp3` sample.
+* **Instant Acoustic Timbre Morphing**: Analyzes your pitch ($F_0$), formant resonant frequencies, and energy profile to read out any script in your own personal voice.
+* **Two-Tier Architecture**:
+  * **Tier 1 (Default - Instant)**: Lightweight acoustic timbre matching. Zero huge model downloads; runs in seconds on any standard laptop CPU.
+  * **Tier 2 (Optional - Deep Neural)**: Optional in-app upgrade for heavy neural cloning weights with upfront disk/RAM requirement checks.
+
+### 3. 🎬 Precision `.SRT` Subtitle Export
+* Export synchronized sentence-by-sentence `.SRT` subtitle files alongside your narration.
+* Perfect for video creators importing into **CapCut, Adobe Premiere Pro, DaVinci Resolve, TikTok, or YouTube Closed Captions**.
+
+### 4. 📄 Script & Document Importer
+* Load long narration scripts, blog posts, or video scripts directly with the **"📄 Import Script (.txt, .md)"** button with character and word count tracking.
+
+### 5. 📖 Immersive Storytelling & Audiobooks
 * Layer your narration over **10 built-in royalty-free ambient instrumentals**:
   1. *Ethereal Piano*
   2. *Lo-Fi Night Thoughts*
@@ -47,18 +62,12 @@ Want to use Samlytics VoiceStudio as a normal desktop app on your laptop without
 * **Smart Audio Ducking**: The background music automatically softens when you speak, ensuring crystal-clear vocal clarity.
 * **Add Your Own Music**: Click **"➕ Import Music"** or drop any MP3/WAV into `background_tracks/`.
 
-### 3. 🎙️ 100% Free Custom Voice Cloning
-* Upload an MP3 or WAV recording of your own voice (5–30 seconds).
-* The app extracts your fundamental pitch ($F_0$), vocal tract formant profile, and timbre resonance.
-* Activates **"🎙️ My Uploaded Voice (Custom Clone)"** to read out any text in your own voice!
-* Runs completely on your laptop's CPU with zero subscription fees and no cloud APIs.
-
-### 4. 🎛️ Total Texture, Speed & Gain Control
+### 6. 🎛️ Total Texture, Speed & Gain Control
 * **Voice Texture**: Fine-tune depth and resonance from deep/warm ($-20\text{Hz}$) to bright/crisp ($+20\text{Hz}$).
 * **Speaking Speed**: Adjust from $0.50\text{x}$ (slow) to $2.00\text{x}$ (fast).
 * **Dual Volume Mixers**: Independent sliders for speech ($0–150\%$) and music ($0–100\%$).
 
-### 5. 💾 Studio Audio Player & Export
+### 7. 💾 Studio Audio Player & Multi-Format Export
 * Integrated player with real-time seeking scrubber and elapsed/total duration timers.
 * Download your finished production with one click as **High-Quality MP3** or **Studio WAV**.
 
@@ -69,7 +78,7 @@ Want to use Samlytics VoiceStudio as a normal desktop app on your laptop without
 Designed in alignment with the **Samlytics Data Services** brand guidelines:
 - **Light & Crisp Interface**: Clean white and warm cream workspace designed for optimal readability.
 - **Brand Palette**: Samlytics Vibrant Blue (`#4392F1`), Deep Navy Text (`#00212B`), and Growth Lime Accents (`#DCFF38` / `#C2E812`).
-- **Typography**: Clean, accessible sans-serif styling for professional presentations.
+- **Custom Product Identity**: Custom VoiceStudio squircle badge featuring dynamic acoustic soundwaves.
 
 ---
 

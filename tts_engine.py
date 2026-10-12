@@ -50,6 +50,9 @@ VOICE_PRESETS = {
 }
 
 class TTSEngine:
+    def __init__(self):
+        self.last_boundaries = []
+
     def synthesize(self, text: str, voice_name: str, speed_mult: float = 1.0, texture_val: int = 0) -> tuple[np.ndarray, int]:
         """
         Synthesizes text to speech.
@@ -68,6 +71,7 @@ class TTSEngine:
         if not text:
             raise ValueError("Input text is empty.")
 
+        self.last_boundaries = []
         preset = VOICE_PRESETS.get(voice_name, VOICE_PRESETS["Deep Male"])
         voice_id = preset["id"]
 
@@ -94,6 +98,9 @@ class TTSEngine:
         try:
             for attempt in range(2):
                 try:
+                    captured_boundaries = []
+                    audio_bytes = bytearray()
+
                     async def _run():
                         kwargs = {}
                         if rate_str and rate_str != "+0%":
@@ -105,13 +112,27 @@ class TTSEngine:
                             voice=voice_id,
                             **kwargs
                         )
-                        await communicate.save(temp_path)
+                        async for chunk in communicate.stream():
+                            if chunk["type"] == "audio":
+                                audio_bytes.extend(chunk["data"])
+                            elif chunk["type"] == "SentenceBoundary":
+                                start_sec = chunk.get("offset", 0) / 10_000_000.0
+                                dur_sec = chunk.get("duration", 0) / 10_000_000.0
+                                captured_boundaries.append({
+                                    "text": chunk.get("text", ""),
+                                    "start": start_sec,
+                                    "end": start_sec + dur_sec
+                                })
 
                     asyncio.run(_run())
 
-                    if not os.path.exists(temp_path) or os.path.getsize(temp_path) == 0:
+                    if not audio_bytes:
                         raise RuntimeError("Empty audio output from TTS service.")
 
+                    with open(temp_path, "wb") as f:
+                        f.write(audio_bytes)
+
+                    self.last_boundaries = captured_boundaries
                     data, sr = sf.read(temp_path)
                     if data.ndim > 1:
                         data = np.mean(data, axis=1)
