@@ -32,3 +32,4 @@ if "%1" NEQ "/quiet" (
     echo.
     pause
 )
+

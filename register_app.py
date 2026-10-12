@@ -62,3 +62,4 @@ if __name__ == "__main__":
         unregister_from_windows_programs()
     else:
         register_in_windows_programs()
+

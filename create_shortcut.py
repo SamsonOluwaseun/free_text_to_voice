@@ -85,5 +85,13 @@ def create_shortcuts():
         write_shortcut(sm_shortcut, pythonw_path, app_script, base_dir, icon_path)
         print(f"SUCCESS: Created shortcut in Windows Start Menu: {sm_shortcut}")
 
+    # Notify Windows Explorer to immediately refresh desktop icon cache
+    try:
+        SHCNE_ASSOCCHANGED = 0x08000000
+        SHCNF_IDLIST = 0x0000
+        ctypes.windll.shell32.SHChangeNotify(SHCNE_ASSOCCHANGED, SHCNF_IDLIST, None, None)
+    except Exception:
+        pass
+
 if __name__ == "__main__":
     create_shortcuts()

@@ -122,3 +122,4 @@ if __name__ == "__main__":
     is_quiet = "/quiet" in sys.argv or "--quiet" in sys.argv or "-q" in sys.argv
     clean_deps = "--remove-deps" in sys.argv
     run_uninstall(quiet=is_quiet, remove_deps=clean_deps)
+
