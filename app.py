@@ -331,8 +331,11 @@ class VoiceStudioApp(ctk.CTk):
         right_panel.grid(row=0, column=1, sticky="nsew", padx=(10, 0))
 
         # --- Section 1: Voice Persona ---
+        self.sec1_frame = ctk.CTkFrame(right_panel, fg_color="transparent")
+        self.sec1_frame.pack(fill="x", padx=0, pady=0)
+
         v_title = ctk.CTkLabel(
-            right_panel,
+            self.sec1_frame,
             text="1. Voice Personality",
             font=ctk.CTkFont(size=15, weight="bold"),
             text_color=SAM_DARK
@@ -343,7 +346,7 @@ class VoiceStudioApp(ctk.CTk):
         self.voice_options = list(VOICE_PRESETS.keys()) + [CUSTOM_VOICE_LABEL]
         self.voice_var = ctk.StringVar(value=default_voice)
         self.voice_dropdown = ctk.CTkOptionMenu(
-            right_panel,
+            self.sec1_frame,
             values=self.voice_options,
             variable=self.voice_var,
             command=self._on_voice_selected,
@@ -358,7 +361,7 @@ class VoiceStudioApp(ctk.CTk):
         self.voice_dropdown.pack(fill="x", padx=12, pady=4)
 
         self.voice_desc_label = ctk.CTkLabel(
-            right_panel,
+            self.sec1_frame,
             text=VOICE_PRESETS[default_voice]["description"],
             font=ctk.CTkFont(size=12),
             text_color=TEXT_MUTED,
@@ -367,8 +370,8 @@ class VoiceStudioApp(ctk.CTk):
         )
         self.voice_desc_label.pack(anchor="w", padx=12, pady=(2, 6))
 
-        # Custom Voice Card (shown if Custom Clone is selected)
-        self.custom_voice_box = ctk.CTkFrame(right_panel, corner_radius=10, fg_color="#F8FAFC", border_width=1, border_color=BORDER_COLOR)
+        # Custom Voice Card (inside sec1_frame, directly below voice selector and before Section 2)
+        self.custom_voice_box = ctk.CTkFrame(self.sec1_frame, corner_radius=10, fg_color="#F8FAFC", border_width=1, border_color=BORDER_COLOR)
         
         cv_header = ctk.CTkFrame(self.custom_voice_box, fg_color="transparent")
         cv_header.pack(fill="x", padx=12, pady=(8, 2))
@@ -386,7 +389,7 @@ class VoiceStudioApp(ctk.CTk):
             text="Record or upload audio (5-30s) to clone your voice.",
             font=ctk.CTkFont(size=12),
             text_color=TEXT_MUTED,
-            wraplength=330,
+            wraplength=310,
             justify="left"
         )
         self.custom_voice_status_label.pack(anchor="w", padx=12, pady=(0, 6))
@@ -407,7 +410,7 @@ class VoiceStudioApp(ctk.CTk):
             text=f"Sample to read:\n\"{MIC_READING_PROMPT}\"",
             font=ctk.CTkFont(size=11),
             text_color=SAM_DARK,
-            wraplength=310,
+            wraplength=300,
             justify="left"
         )
         prompt_box.pack(anchor="w", padx=10, pady=(0, 6))
@@ -452,36 +455,37 @@ class VoiceStudioApp(ctk.CTk):
         self.btn_preview_sample.pack(side="left")
 
         # Deep AI Upgrade Section (Optional Tier 2)
-        deep_frame = ctk.CTkFrame(self.custom_voice_box, fg_color="#FFFFFF", corner_radius=6, border_width=1, border_color="#CBD5E1")
+        deep_frame = ctk.CTkFrame(self.custom_voice_box, fg_color="#FFFFFF", corner_radius=8, border_width=1, border_color="#CBD5E1")
         deep_frame.pack(fill="x", padx=12, pady=(4, 6))
 
         self.deep_status_label = ctk.CTkLabel(
             deep_frame,
-            text="⚡ Fast Timbre Cloner Active (Instant)\nWant ultra-realistic flow-matched cloning?",
+            text="⚡ Fast Timbre Cloner Active (Instant)\nWant ultra-realistic flow cloning?",
             font=ctk.CTkFont(size=11),
             text_color=SAM_DARK,
-            justify="left"
+            justify="left",
+            wraplength=200
         )
-        self.deep_status_label.pack(side="left", padx=8, pady=4)
+        self.deep_status_label.pack(side="left", padx=8, pady=6)
 
         self.btn_deep_upgrade = ctk.CTkButton(
             deep_frame,
             text="🚀 Deep AI Setup",
-            height=26,
-            width=110,
+            height=28,
+            width=100,
             fg_color="#0284C7",
             hover_color="#0369A1",
             text_color="#FFFFFF",
             command=self._prompt_deep_ai_install
         )
-        self.btn_deep_upgrade.pack(side="right", padx=8, pady=4)
+        self.btn_deep_upgrade.pack(side="right", padx=8, pady=6)
 
         cv_notice = ctk.CTkLabel(
             self.custom_voice_box,
             text="ℹ️ 100% Free & Local • Runs on CPU (~15-30s per generation)\n⚡ For instant (<1s) generation, choose a Studio Voice above.",
             font=ctk.CTkFont(size=11),
             text_color="#D97706",
-            wraplength=330,
+            wraplength=310,
             justify="left"
         )
         cv_notice.pack(anchor="w", padx=12, pady=(0, 8))
