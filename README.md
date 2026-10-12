@@ -25,6 +25,18 @@ Want to use Samlytics VoiceStudio as a normal desktop app on your laptop without
 
 ---
 
+## 🗑️ How to Uninstall
+
+If you ever want to uninstall Samlytics VoiceStudio, you can do it in two easy ways:
+
+* **Option A — Through Windows Settings (Standard Windows Way)**:
+  1. Open **Windows Settings** > **Apps** > **Installed apps** (or **Control Panel** > **Programs and Features**).
+  2. Find **Samlytics VoiceStudio** (Publisher: *Samlytics Data Services*).
+  3. Click **Uninstall**.
+* **Option B — 1-Click Script**:
+  1. Open the app folder and double-click **`uninstall_app.bat`**.
+  2. It will automatically remove the Desktop shortcut, Start Menu shortcut, unregister from Windows Programs, and ask if you want to remove the Python packages.
+
 ## ✨ Features & Capabilities
 
 ### 1. 🎓 Explain Complex Technical Concepts Simply
