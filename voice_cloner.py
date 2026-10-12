@@ -13,7 +13,6 @@ import numpy as np
 import scipy.signal as signal
 from scipy.interpolate import interp1d
 import soundfile as sf
-import torch
 
 from tts_engine import TTSEngine
 
