@@ -1,83 +1,86 @@
-# 🎙️ VoiceStudio Pro — Local Text-to-Voice & Storytelling Studio
+# 🎙️ Samlytics VoiceStudio
 
-A **100% free, local desktop Text-to-Voice application** for Windows. Convert scripts and stories into natural voice audio, fine-tune voice texture and speed, layer background storytelling music with smart ducking, and export high-fidelity **MP3** or **WAV** files with zero subscription fees.
-
----
-
-## ✨ Features
-
-- **Curated Professional Voice Presets (Instant Mode - <1s)**:
-  - **Nigerian Professional Male**: Clear, engaging, articulate Nigerian accent (*ideal for tutorials, tech explainers, and teaching complex concepts to non-technical audiences*).
-  - **Deep Male**: Resonant, authoritative bass-baritone tone (*ideal for documentaries & epic narration*).
-  - **Soft Male**: Gentle, calm, conversational acoustic tone (*ideal for bedtime stories & calm narration*).
-  - **Professional Female 1**: Smooth, warm, natural conversational voice (*ideal for audiobooks & podcasts*).
-  - **Professional Female 2**: Crisp, bright, articulate executive tone (*ideal for business presentations & news*).
-- **🎙️ Custom Voice Cloning (Upload Your Voice Recording)**:
-  - **100% Free & Local**: Upload a 5–30 second MP3 or WAV recording of your own voice.
-  - The app analyzes your vocal register, median pitch fundamental, and spectral resonance profile.
-  - Automatically activates **"🎙️ My Uploaded Voice (Custom Clone)"** in the dropdown.
-  - Converts any written text into speech matching your vocal timbre and tone.
-  - Transparent processing: runs on your laptop's CPU (~15–30s generation time) with a preview button.
-- **Voice Texture & Speed Sliders**:
-  - **Texture (Pitch / Timbre)**: Slider from deep/resonant to crisp/bright ($-20\text{Hz}$ to $+20\text{Hz}$).
-  - **Speed (Rate)**: Slider from $0.50\text{x}$ (slower) to $2.00\text{x}$ (faster).
-- **Storytelling Background Instrumentals**:
-  - Includes **10 pre-loaded ambient tracks**:
-    1. *Ethereal Piano*
-    2. *Lo-Fi Night Thoughts*
-    3. *Cinematic Story Strings*
-    4. *Cozy Acoustic Warmth*
-    5. *Deep Space Ambient*
-    6. *Gentle Fairytale Harp*
-    7. *Nature & Gentle Rain*
-    8. *Meditative Zen Bells*
-    9. *Mystery & Suspense*
-    10. *Warm Sunrise Hope*
-  - **Easy Expansion**: Click **"➕ Import Instrumental"** or drop any `.mp3`, `.wav`, or `.ogg` file into the `background_tracks/` folder to use your own music.
-  - **Smart Ducking**: Automatically dips the background music level while speech is active so your story narration always stays clear.
-  - **Dual Volume Controls**: Independent volume sliders for voice ($0-150\%$) and music ($0-100\%$).
-- **Integrated Audio Player**:
-  - Play, Pause, Stop controls.
-  - Interactive scrubbing seek bar with formatted timestamps (`00:00 / 00:00`).
-- **Flexible File Export**:
-  - **Download MP3** button.
-  - **Download WAV** button.
-  - Save directly to your preferred folder with automatic date-stamped file naming.
+<div align="center">
+  <img src="assets/logo_square.png" width="100" alt="Samlytics Logo" />
+  <h3>Free Local Text-to-Voice & Storytelling Desktop Studio</h3>
+  <p><b>Democratizing voice synthesis, technical education, and storytelling with a human touch.</b></p>
+  <p>100% Free Forever • Zero Subscriptions • Runs Completely on Your Laptop</p>
+</div>
 
 ---
 
-## 🚀 How to Run
+## ⚡ Quick 1-Click Install (No Coding or VS Code Needed!)
 
-### Option 1: Double-Click Launcher
-Double-click `run_app.bat` in this folder to launch the app immediately.
+Want to use Samlytics VoiceStudio as a normal desktop app on your laptop without opening any code editor? Follow these 3 simple steps:
 
-### Option 2: Command Line
-Open PowerShell or Command Prompt in this folder and run:
+1. **Download the App**:
+   - [👉 Click here to Download ZIP](https://github.com/SamsonOluwaseun/free_text_to_voice/archive/refs/heads/main.zip)
+2. **Extract the ZIP Folder**:
+   - Right-click the downloaded `.zip` file and select **Extract All...**
+3. **Run the 1-Click Installer**:
+   - Open the extracted folder and double-click **`install_app.bat`**.
+   - It will install dependencies and **automatically create a desktop shortcut** named **"Samlytics VoiceStudio"** with the official brand icon on your Windows Desktop!
+
+> 🎉 **Done!** Whenever you want to use the app, just double-click the **Samlytics VoiceStudio** icon on your Desktop.
+
+---
+
+## ✨ What Samlytics VoiceStudio Can Help You Do
+
+### 1. 🎓 Explain Complex Technical Concepts Simply
+* Powered by the **Nigerian Professional Male Voice (`Abeo Neural`)**:
+  * Crisp, engaging, articulate delivery built specifically for tutorials, tech explainers, and teaching data/software concepts to non-technical audiences.
+  * Includes a 1-click **"💡 Tech Tutorial"** template demonstrating how to explain concepts like cloud computing and APIs using everyday real-world analogies.
+
+### 2. 📖 Immersive Storytelling & Audiobooks
+* Layer your narration over **10 built-in royalty-free ambient instrumentals**:
+  1. *Ethereal Piano*
+  2. *Lo-Fi Night Thoughts*
+  3. *Cinematic Story Strings*
+  4. *Cozy Acoustic Warmth*
+  5. *Deep Space Ambient*
+  6. *Gentle Fairytale Harp*
+  7. *Nature & Gentle Rain*
+  8. *Meditative Zen Bells*
+  9. *Mystery & Suspense*
+  10. *Warm Sunrise Hope*
+* **Smart Audio Ducking**: The background music automatically softens when you speak, ensuring crystal-clear vocal clarity.
+* **Add Your Own Music**: Click **"➕ Import Music"** or drop any MP3/WAV into `background_tracks/`.
+
+### 3. 🎙️ 100% Free Custom Voice Cloning
+* Upload an MP3 or WAV recording of your own voice (5–30 seconds).
+* The app extracts your fundamental pitch ($F_0$), vocal tract formant profile, and timbre resonance.
+* Activates **"🎙️ My Uploaded Voice (Custom Clone)"** to read out any text in your own voice!
+* Runs completely on your laptop's CPU with zero subscription fees and no cloud APIs.
+
+### 4. 🎛️ Total Texture, Speed & Gain Control
+* **Voice Texture**: Fine-tune depth and resonance from deep/warm ($-20\text{Hz}$) to bright/crisp ($+20\text{Hz}$).
+* **Speaking Speed**: Adjust from $0.50\text{x}$ (slow) to $2.00\text{x}$ (fast).
+* **Dual Volume Mixers**: Independent sliders for speech ($0–150\%$) and music ($0–100\%$).
+
+### 5. 💾 Studio Audio Player & Export
+* Integrated player with real-time seeking scrubber and elapsed/total duration timers.
+* Download your finished production with one click as **High-Quality MP3** or **Studio WAV**.
+
+---
+
+## 🎨 Brand Design & Theme
+
+Designed in alignment with the **Samlytics Data Services** brand guidelines:
+- **Light & Crisp Interface**: Clean white and warm cream workspace designed for optimal readability.
+- **Brand Palette**: Samlytics Vibrant Blue (`#4392F1`), Deep Navy Text (`#00212B`), and Growth Lime Accents (`#DCFF38` / `#C2E812`).
+- **Typography**: Clean, accessible sans-serif styling for professional presentations.
+
+---
+
+## 💻 Manual Launch from Terminal (Optional)
+
+If you prefer launching via command line:
 ```powershell
 python app.py
 ```
 
 ---
 
-## 📁 Project Structure
-
-```
-Text to voice App/
-├── app.py                  # Main CustomTkinter desktop GUI application
-├── tts_engine.py           # Neural voice synthesis with pitch/rate tuning & SAPI fallback
-├── audio_mixer.py          # Audio mixer, sample rate alignment, ducking, and MP3/WAV export
-├── player.py               # SoundDevice audio player with real-time seeking
-├── tracks_generator.py     # Generates the 10 starter storytelling instrumentals
-├── background_tracks/      # Folder containing all background instrumentals
-├── exports/                # Default folder for downloaded MP3 and WAV files
-├── requirements.txt        # Python dependency manifest
-└── run_app.bat             # 1-click Windows launcher
-```
-
----
-
-## 🎵 Adding Your Own Free Online Instrumentals
-1. Find any royalty-free instrumental audio online (e.g., from Free Music Archive, YouTube Audio Library, Pixabay Music, or Incompetech).
-2. Click the green **"➕ Import Instrumental"** button in the app, or open the **"📁 Tracks Folder"** and drop your `.mp3` or `.wav` files directly into `background_tracks/`.
-3. The new tracks will automatically appear in your background music dropdown!
-
+## 📄 License
+Open source and 100% free for educational, personal, and commercial storytelling use. Powered by **Samlytics Data Services**.
