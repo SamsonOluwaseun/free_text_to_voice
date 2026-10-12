@@ -124,9 +124,9 @@ class VoiceStudioApp(ctk.CTk):
         if os.path.exists(logo_png_path):
             try:
                 pil_logo = Image.open(logo_png_path)
-                self.brand_img = ctk.CTkImage(light_image=pil_logo, dark_image=pil_logo, size=(38, 38))
+                self.brand_img = ctk.CTkImage(light_image=pil_logo, dark_image=pil_logo, size=(46, 46))
                 logo_label = ctk.CTkLabel(left_brand, image=self.brand_img, text="")
-                logo_label.pack(side="left", padx=(0, 10))
+                logo_label.pack(side="left", padx=(0, 12))
             except Exception:
                 pass
 

@@ -45,3 +45,4 @@ def create_desktop_shortcut():
 
 if __name__ == "__main__":
     create_desktop_shortcut()
+
