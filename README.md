@@ -27,26 +27,37 @@ Want to use VoiceStudio as a normal desktop app on your laptop without writing c
 ### 🤖 Edition 2: AI & MCP Server (For Claude Desktop, Cursor, & Developers)
 Want AI tools like **Claude Desktop**, **Cursor**, or **ChatGPT** to generate voice, background music, and `.srt` subtitles directly in your chat?
 
-1. **Add to Claude Desktop**:
+1. **Download the MCP / AI Package**:
+   - [👉 Click here to Download ZIP](https://github.com/SamsonOluwaseun/free_text_to_voice/archive/refs/heads/main.zip)
+   - Extract the `.zip` folder to your computer (e.g. `C:\VoiceStudio`).
+   - *(For Claude.ai Web)*: You can attach this extracted folder or `.zip` directly into your Claude.ai web chat to run in Claude's code sandbox!
+
+2. **Install Lightweight Dependencies (Zero GUI Bloat)**:
+   ```bash
+   pip install -r requirements-mcp.txt
+   ```
+
+3. **Add to Claude Desktop**:
    Open your `claude_desktop_config.json` and add:
    ```json
    {
      "mcpServers": {
        "voicestudio": {
          "command": "python",
-         "args": ["<PATH_TO_VOICESTUDIO>/mcp_server.py"]
+         "args": ["<PATH_TO_EXTRACTED_FOLDER>/mcp_server.py"]
        }
      }
    }
    ```
-2. **Chat with Claude**:
+
+4. **Chat with Claude**:
    Ask Claude to write any script and voice it. Claude will present interactive options in your chat:
    - Voice selection (e.g. *Nigerian Abeo, Deep Male, Soft Male, Ava*)
    - Background music (e.g. *Lo-Fi, Piano, Strings, Zen Bells*)
    - Speaking speed (e.g. *0.8x, 1.0x, 1.2x*)
    - Subtitle `.srt` export for video editing
 
-3. **Or run Headless CLI directly in terminal**:
+5. **Or run Headless CLI directly in terminal**:
    ```bash
    python cli.py speak "Welcome to cloud computing." --voice "Abeo" --music "Lo-Fi" --ducking --srt
    ```
