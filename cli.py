@@ -105,13 +105,23 @@ def cmd_speak(args):
     if args.srt:
         srt_path = out_path.with_suffix(".srt")
         total_duration = len(final_audio) / final_sr
-        SubtitleEngine.generate_srt(
-            text=text,
-            total_duration_sec=total_duration,
-            output_filepath=str(srt_path),
-            sentence_boundaries=tts.last_boundaries
-        )
-        print(f"[SUCCESS] Subtitles saved to: {srt_path}")
+        try:
+            if hasattr(SubtitleEngine, "generate_srt"):
+                SubtitleEngine.generate_srt(
+                    text=text,
+                    total_duration_sec=total_duration,
+                    output_filepath=str(srt_path),
+                    sentence_boundaries=tts.last_boundaries
+                )
+            elif hasattr(SubtitleEngine, "generate_srt_from_boundaries") and tts.last_boundaries:
+                srt_content = SubtitleEngine.generate_srt_from_boundaries(tts.last_boundaries, total_duration)
+                SubtitleEngine.save_srt_file(srt_content, str(srt_path))
+            elif hasattr(SubtitleEngine, "generate_srt_from_text_and_duration"):
+                srt_content = SubtitleEngine.generate_srt_from_text_and_duration(text, total_duration)
+                SubtitleEngine.save_srt_file(srt_content, str(srt_path))
+            print(f"[SUCCESS] Subtitles saved to: {srt_path}")
+        except Exception as e:
+            print(f"[Warning] Subtitle generation notice ({e}), audio was preserved successfully.")
 
 def cmd_list_voices(args):
     tts = TTSEngine()

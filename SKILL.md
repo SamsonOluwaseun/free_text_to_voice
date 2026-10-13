@@ -66,17 +66,16 @@ Add this to your `claude_desktop_config.json`:
 
 ---
 
-## 🇳🇬 3. Nigerian Voice Distillation & Training (`en_NG-abeo.onnx`)
+## 🇳🇬 3. Custom & Open-Source Offline Nigerian Voice Models
 
-To train the 100% offline Piper ONNX model of the Nigerian Abeo voice:
+VoiceStudio supports offline neural voice models via **Piper ONNX**:
 
-1. Open `train_offline_abeo.ipynb` in [Google Colab](https://colab.research.google.com/).
-2. Select **T4 GPU** runtime.
-3. Run all cells:
-   - Cell 2 automatically generates 65+ phonetically balanced speech clips using `en-NG-AbeoNeural` in ~2 minutes.
-   - Cell 5 fine-tunes the base Piper checkpoint into `en_NG-abeo.onnx`.
-4. Download `en_NG-abeo.onnx` and `en_NG-abeo.onnx.json` and place them in `offline_models/`.
-5. VoiceStudio automatically recognizes the model and enables offline Nigerian speech!
+- **Online Mode**: Connects directly to the official neural voice endpoint (`en-NG-AbeoNeural`) for crisp tutorial narrations and video creation.
+- **Offline & Legally Compliant Model Training**:
+  To train or fine-tune an offline Nigerian voice model safely without breaching cloud terms of service:
+  1. **Dataset Sources**: Use **OpenSLR 70** (Google's open-source crowdsourced Nigerian English speech dataset under CC-BY 4.0) or your own voice recordings from `custom_voices/`.
+  2. **Fine-Tuning**: Run the Google Colab notebook `train_offline_abeo.ipynb` to fine-tune the base English Piper checkpoint on the audio dataset.
+  3. **Deployment**: Place your trained `en_NG-abeo.onnx` (or custom `.onnx`) and its `.json` into `offline_models/`. VoiceStudio will automatically detect and synthesize speech 100% offline!
 
 ---
 
