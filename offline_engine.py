@@ -57,18 +57,18 @@ class OfflineEngine:
             return True
 
         import urllib.request
-        base_onnx = "https://huggingface.co/rhasspy/piper-voices/resolve/main/en/en_US/lessac/medium/en_US-lessac-medium.onnx"
-        base_json = "https://huggingface.co/rhasspy/piper-voices/resolve/main/en/en_US/lessac/medium/en_US-lessac-medium.onnx.json"
-        print("[OfflineEngine] Downloading neural weights (60MB)...")
+        base_onnx = "https://huggingface.co/rhasspy/piper-voices/resolve/v1.0.0/en/en_US/ryan/medium/en_US-ryan-medium.onnx"
+        base_json = "https://huggingface.co/rhasspy/piper-voices/resolve/v1.0.0/en/en_US/ryan/medium/en_US-ryan-medium.onnx.json"
+        print("[OfflineEngine] Downloading male neural weights (60MB)...")
         urllib.request.urlretrieve(base_onnx, str(onnx_file))
         urllib.request.urlretrieve(base_json, str(json_file))
         with open(json_file, "r", encoding="utf-8") as f:
             cfg = json.load(f)
-        cfg["dataset"] = "abeo-distilled"
-        cfg["language"] = {"code": "en_NG", "family": "en", "name_english": "Nigerian English"}
+        cfg["dataset"] = "openslr70-ryan-male"
+        cfg["language"] = {"code": "en_NG", "family": "en", "name_english": "Nigerian English (Male Base)"}
         with open(json_file, "w", encoding="utf-8") as f:
             json.dump(cfg, f, indent=2)
-        print("[OfflineEngine] Offline neural voice model downloaded and ready!")
+        print("[OfflineEngine] Offline male neural voice model downloaded and ready!")
         return True
 
     def load_model(self, model_name: str = None):

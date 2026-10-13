@@ -159,8 +159,8 @@ Connect VoiceStudio directly into Claude Desktop by adding this to `claude_deskt
 }
 ```
 
-### 3. 🇳🇬 Offline Nigerian Voice Distillation (`en_NG-abeo.onnx`)
-Run the turnkey Google Colab notebook `train_offline_abeo.ipynb` on a free T4 GPU to distill the Nigerian Abeo voice into an offline ~45MB Piper ONNX model. Place the resulting files into `offline_models/` for 100% offline speech!
+### 3. 🇳🇬 Offline Nigerian Male Voice Training (`en_NG-abeo.onnx`)
+Run the Google Colab notebook `train_offline_abeo.ipynb` on a free T4 GPU to fine-tune the male neural base checkpoint on Google's open-source OpenSLR 70 Nigerian English male dataset. Place the resulting files into `offline_models/` for 100% offline speech!
 
 ---
 

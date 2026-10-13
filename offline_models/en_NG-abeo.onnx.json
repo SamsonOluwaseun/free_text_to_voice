@@ -484,7 +484,7 @@
   "language": {
     "code": "en_NG",
     "family": "en",
-    "name_english": "Nigerian English"
+    "name_english": "Nigerian English (Male Base)"
   },
-  "dataset": "abeo-distilled"
+  "dataset": "openslr70-ryan-male"
 }

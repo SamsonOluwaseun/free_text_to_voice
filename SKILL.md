@@ -73,9 +73,9 @@ VoiceStudio supports offline neural voice models via **Piper ONNX**:
 - **Online Mode**: Connects directly to the official neural voice endpoint (`en-NG-AbeoNeural`) for crisp tutorial narrations and video creation.
 - **Offline & Legally Compliant Model Training**:
   To train or fine-tune an offline Nigerian voice model safely without breaching cloud terms of service:
-  1. **Dataset Sources**: Use **OpenSLR 70** (Google's open-source crowdsourced Nigerian English speech dataset under CC-BY 4.0) or your own voice recordings from `custom_voices/`.
-  2. **Fine-Tuning**: Run the Google Colab notebook `train_offline_abeo.ipynb` to fine-tune the base English Piper checkpoint on the audio dataset.
-  3. **Deployment**: Place your trained `en_NG-abeo.onnx` (or custom `.onnx`) and its `.json` into `offline_models/`. VoiceStudio will automatically detect and synthesize speech 100% offline!
+  1. **Dataset Sources**: Use **OpenSLR 70** (Google's open-source crowdsourced Nigerian English speech dataset - male subset, CC BY-SA 4.0) or your own voice recordings from `custom_voices/`.
+  2. **Fine-Tuning**: Run the Google Colab notebook `train_offline_abeo.ipynb` on a free T4 GPU to fine-tune the male base checkpoint (`en_US-ryan-medium`) on the Nigerian audio dataset.
+  3. **Deployment**: Place your trained `en_NG-abeo.onnx` and its `.json` into `offline_models/`. VoiceStudio will automatically detect and synthesize speech 100% offline!
 
 ---
 
