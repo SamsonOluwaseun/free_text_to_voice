@@ -69,6 +69,34 @@ class AudioMixer:
         shutil.copy2(source_path, dest_path)
         return dest_path
 
+    def mix(
+        self,
+        speech_data: np.ndarray,
+        speech_sr: int,
+        music_name: str = "",
+        music_volume: float = 0.25,
+        speech_volume: float = 1.0,
+        ducking: bool = True
+    ) -> tuple[np.ndarray, int]:
+        """
+        Convenience method to mix speech with a track by name/keyword.
+        """
+        tracks = self.get_available_tracks()
+        track_path = ""
+        if music_name:
+            for tname, tpath in tracks.items():
+                if music_name.lower() in tname.lower():
+                    track_path = tpath
+                    break
+        return self.mix_audio(
+            voice_data=speech_data,
+            sr=speech_sr,
+            bg_track_path=track_path,
+            voice_volume=speech_volume,
+            bg_volume=music_volume,
+            ducking=ducking
+        )
+
     def mix_audio(
         self,
         voice_data: np.ndarray,
