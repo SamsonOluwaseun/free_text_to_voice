@@ -24,3 +24,6 @@ Thumbs.db
 dist/
 dataset_abeo/
 
+# Heavy model weights (auto-downloaded on demand or via Colab)
+offline_models/*.onnx
+

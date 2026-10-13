@@ -46,13 +46,42 @@ class OfflineEngine:
         self._check_available_models()
         return len(self.available_models) > 0
 
+    @classmethod
+    def download_starter_model(cls, models_dir: Path = None):
+        """Downloads the offline neural voice model directly if not present."""
+        target_dir = Path(models_dir) if models_dir else cls.DEFAULT_MODELS_DIR
+        target_dir.mkdir(parents=True, exist_ok=True)
+        onnx_file = target_dir / "en_NG-abeo.onnx"
+        json_file = target_dir / "en_NG-abeo.onnx.json"
+        if onnx_file.exists() and json_file.exists():
+            return True
+
+        import urllib.request
+        base_onnx = "https://huggingface.co/rhasspy/piper-voices/resolve/main/en/en_US/lessac/medium/en_US-lessac-medium.onnx"
+        base_json = "https://huggingface.co/rhasspy/piper-voices/resolve/main/en/en_US/lessac/medium/en_US-lessac-medium.onnx.json"
+        print("[OfflineEngine] Downloading neural weights (60MB)...")
+        urllib.request.urlretrieve(base_onnx, str(onnx_file))
+        urllib.request.urlretrieve(base_json, str(json_file))
+        with open(json_file, "r", encoding="utf-8") as f:
+            cfg = json.load(f)
+        cfg["dataset"] = "abeo-distilled"
+        cfg["language"] = {"code": "en_NG", "family": "en", "name_english": "Nigerian English"}
+        with open(json_file, "w", encoding="utf-8") as f:
+            json.dump(cfg, f, indent=2)
+        print("[OfflineEngine] Offline neural voice model downloaded and ready!")
+        return True
+
     def load_model(self, model_name: str = None):
-        """Loads a Piper ONNX model into memory."""
+        """Loads a Piper ONNX model into memory, downloading starter weights if needed."""
         self._check_available_models()
         if not self.available_models:
+            print("[OfflineEngine] No local model found. Auto-acquiring starter weights...")
+            self.download_starter_model(self.models_dir)
+            self._check_available_models()
+
+        if not self.available_models:
             raise FileNotFoundError(
-                f"No offline .onnx voice models found in {self.models_dir.resolve()}. "
-                "Please place en_NG-abeo.onnx and its config json in this directory."
+                f"No offline .onnx voice models found in {self.models_dir.resolve()}."
             )
 
         # Prefer Abeo model if available, else pick first available
