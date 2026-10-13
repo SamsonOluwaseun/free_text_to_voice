@@ -100,8 +100,18 @@ TOOLS = [
                 },
                 "music_track": {
                     "type": "string",
-                    "description": "Name or keyword of the background music (e.g. 'Lo-Fi', 'Piano', 'Strings', 'Warm Sunrise', 'Acoustic').",
+                    "description": "Name or keyword of the background music (e.g. 'Lo-Fi', 'Piano', 'Strings', 'Warm Sunrise', 'Acoustic', 'Zen Bells').",
                     "default": "Lo-Fi Night Thoughts"
+                },
+                "speed": {
+                    "type": "number",
+                    "description": "Speaking speed rate (0.5 to 2.0). 1.0 is normal speed.",
+                    "default": 1.0
+                },
+                "texture": {
+                    "type": "integer",
+                    "description": "Voice pitch texture in Hz (-20 to +20). Negative = deeper, Positive = crisper.",
+                    "default": 0
                 },
                 "music_volume": {
                     "type": "number",
@@ -112,6 +122,11 @@ TOOLS = [
                     "type": "boolean",
                     "description": "If true, automatically softens music when voice is active.",
                     "default": True
+                },
+                "offline": {
+                    "type": "boolean",
+                    "description": "If true, forces 100% offline neural synthesis.",
+                    "default": False
                 },
                 "output_path": {
                     "type": "string",
@@ -194,11 +209,20 @@ def handle_create_story_narration(args):
     voice = args.get("voice", "Nigerian Professional Male")
     music_track = args.get("music_track", "Lo-Fi Night Thoughts")
     music_vol = float(args.get("music_volume", 0.25))
+    speed = float(args.get("speed", 1.0))
+    texture = int(args.get("texture", 0))
+    offline = bool(args.get("offline", False))
     ducking = bool(args.get("ducking", True))
     out_path_str = args.get("output_path", "exports/story.mp3")
 
     tts = TTSEngine()
-    speech_data, sr = tts.synthesize(text=text, voice_name=voice)
+    speech_data, sr = tts.synthesize(
+        text=text,
+        voice_name=voice,
+        speed_mult=speed,
+        texture_val=texture,
+        force_offline=offline
+    )
 
     mixer = AudioMixer()
     tracks = mixer.get_available_tracks()
@@ -369,3 +393,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+

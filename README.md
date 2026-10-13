@@ -9,19 +9,47 @@
 
 ---
 
-## ⚡ Quick 1-Click Install (No Coding or VS Code Needed!)
+## 📦 Choose Your Edition
 
-Want to use Samlytics VoiceStudio as a normal desktop app on your laptop without opening any code editor? Follow these 3 simple steps:
+### 🖥️ Edition 1: Desktop Application (For Windows Creators & Educators)
+Want to use VoiceStudio as a normal desktop app on your laptop without writing code?
 
 1. **Download the App**:
    - [👉 Click here to Download ZIP](https://github.com/SamsonOluwaseun/free_text_to_voice/archive/refs/heads/main.zip)
 2. **Extract the ZIP Folder**:
    - Right-click the downloaded `.zip` file and select **Extract All...**
 3. **Run the 1-Click Installer**:
-   - Open the extracted folder and double-click **`install_app.bat`**.
-   - It will install dependencies and **automatically create a desktop shortcut** named **"Samlytics VoiceStudio"** with the official product icon on your Windows Desktop!
+   - Double-click **`install_app.bat`**.
+   - It will install dependencies and automatically create a desktop shortcut named **"Samlytics VoiceStudio"** with the official brand icon on your Windows Desktop!
 
-> 🎉 **Done!** Whenever you want to use the app, just double-click the **Samlytics VoiceStudio** icon on your Desktop.
+---
+
+### 🤖 Edition 2: AI & MCP Server (For Claude Desktop, Cursor, & Developers)
+Want AI tools like **Claude Desktop**, **Cursor**, or **ChatGPT** to generate voice, background music, and `.srt` subtitles directly in your chat?
+
+1. **Add to Claude Desktop**:
+   Open your `claude_desktop_config.json` and add:
+   ```json
+   {
+     "mcpServers": {
+       "voicestudio": {
+         "command": "python",
+         "args": ["<PATH_TO_VOICESTUDIO>/mcp_server.py"]
+       }
+     }
+   }
+   ```
+2. **Chat with Claude**:
+   Ask Claude to write any script and voice it. Claude will present interactive options in your chat:
+   - Voice selection (e.g. *Nigerian Abeo, Deep Male, Soft Male, Ava*)
+   - Background music (e.g. *Lo-Fi, Piano, Strings, Zen Bells*)
+   - Speaking speed (e.g. *0.8x, 1.0x, 1.2x*)
+   - Subtitle `.srt` export for video editing
+
+3. **Or run Headless CLI directly in terminal**:
+   ```bash
+   python cli.py speak "Welcome to cloud computing." --voice "Abeo" --music "Lo-Fi" --ducking --srt
+   ```
 
 ---
 

@@ -89,3 +89,4 @@ To train the 100% offline Piper ONNX model of the Nigerian Abeo voice:
 | **Soft Male** | `en-US-AndrewNeural` | Gentle, warm storytelling acoustic tone |
 | **Professional Female 1** | `en-US-AvaNeural` | Smooth, warm conversational voice for podcasts & audiobooks |
 | **Professional Female 2** | `en-US-AriaNeural` | Crisp executive tone for presentations & news |
+

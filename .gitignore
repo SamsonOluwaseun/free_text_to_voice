@@ -20,3 +20,7 @@ custom_voices/*.m4a
 .DS_Store
 Thumbs.db
 
+# Build & Release packages
+dist/
+dataset_abeo/
+

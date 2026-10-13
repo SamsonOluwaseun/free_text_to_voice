@@ -41,3 +41,4 @@ setup(
         "Topic :: Multimedia :: Sound/Audio :: Speech",
     ],
 )
+

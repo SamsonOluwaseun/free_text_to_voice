@@ -88,3 +88,4 @@ class OfflineEngine:
             self.voice.synthesize_wav(text, wav_file)
 
         return str(output_wav_path)
+
