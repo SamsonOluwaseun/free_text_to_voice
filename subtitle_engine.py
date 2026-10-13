@@ -71,6 +71,15 @@ class SubtitleEngine:
         return cls.generate_srt_from_boundaries(boundaries)
 
     @classmethod
+    def generate_srt(cls, text: str, total_duration_sec: float, output_filepath: str, sentence_boundaries: list = None) -> str:
+        """Convenience method to generate and save SRT subtitle file."""
+        if sentence_boundaries and len(sentence_boundaries) > 0:
+            srt_content = cls.generate_srt_from_boundaries(sentence_boundaries, total_duration_sec)
+        else:
+            srt_content = cls.generate_srt_from_text_and_duration(text, total_duration_sec)
+        return cls.save_srt_file(srt_content, output_filepath)
+
+    @classmethod
     def save_srt_file(cls, srt_content: str, output_filepath: str):
         """Saves SRT text content to file."""
         if not output_filepath.endswith(".srt"):

@@ -15,6 +15,7 @@ import tempfile
 import numpy as np
 import soundfile as sf
 import edge_tts
+from offline_engine import OfflineEngine
 
 VOICE_PRESETS = {
     "Nigerian Professional Male": {
@@ -52,8 +53,12 @@ VOICE_PRESETS = {
 class TTSEngine:
     def __init__(self):
         self.last_boundaries = []
+        try:
+            self.offline_engine = OfflineEngine()
+        except Exception:
+            self.offline_engine = None
 
-    def synthesize(self, text: str, voice_name: str, speed_mult: float = 1.0, texture_val: int = 0) -> tuple[np.ndarray, int]:
+    def synthesize(self, text: str, voice_name: str, speed_mult: float = 1.0, texture_val: int = 0, force_offline: bool = False) -> tuple[np.ndarray, int]:
         """
         Synthesizes text to speech.
         
@@ -63,6 +68,7 @@ class TTSEngine:
             speed_mult: Speed factor (0.5 to 2.0). 1.0 is normal.
             texture_val: Texture / Pitch adjustment in Hz (-20 to +20).
                          Negative = deeper / warmer tone, Positive = crisp / bright tone.
+            force_offline: If True, uses local neural/offline synthesis.
                          
         Returns:
             (audio_numpy_array, sample_rate)
@@ -75,6 +81,9 @@ class TTSEngine:
         preset = VOICE_PRESETS.get(voice_name, VOICE_PRESETS["Deep Male"])
         voice_id = preset["id"]
 
+        if force_offline:
+            return self._synthesize_offline(text, preset, speed_mult, voice_name)
+
         # Calculate rate string for edge-tts (e.g. "+15%", "-20%")
         rate_percent = int(round((speed_mult - 1.0) * 100))
         rate_str = f"{rate_percent:+d}%"
@@ -86,8 +95,8 @@ class TTSEngine:
         try:
             return self._synthesize_edge_tts(text, voice_id, rate_str, pitch_str)
         except Exception as e:
-            print(f"Edge TTS synthesis notice ({e}). Falling back to offline Windows engine...")
-            return self._synthesize_offline(text, preset, speed_mult)
+            print(f"Edge TTS synthesis notice ({e}). Falling back to offline engine...")
+            return self._synthesize_offline(text, preset, speed_mult, voice_name)
 
     def _synthesize_edge_tts(self, text: str, voice_id: str, rate_str: str, pitch_str: str) -> tuple[np.ndarray, int]:
         import time
@@ -150,52 +159,68 @@ class TTSEngine:
                 except Exception:
                     pass
 
-    def _synthesize_offline(self, text: str, preset: dict, speed_mult: float) -> tuple[np.ndarray, int]:
+    def _synthesize_offline(self, text: str, preset: dict, speed_mult: float, voice_name: str = "") -> tuple[np.ndarray, int]:
         """
-        Native Windows SAPI speech synthesis via win32com COM interface.
-        Ultra-fast, zero-network, and never deadlocks.
+        Synthesizes offline using Piper ONNX neural models (including distilled Abeo) if available,
+        falling back to native Windows SAPI speech.
         """
-        import win32com.client
+        # 1. Try local Piper ONNX neural engine
+        if self.offline_engine and self.offline_engine.is_ready():
+            with tempfile.NamedTemporaryFile(suffix=".wav", delete=False) as tf:
+                temp_path = tf.name
+            try:
+                self.offline_engine.synthesize(text, temp_path, speed=speed_mult)
+                data, sr = sf.read(temp_path)
+                if data.ndim > 1:
+                    data = np.mean(data, axis=1)
+                return data.astype(np.float32), sr
+            except Exception as e:
+                print(f"[Offline] Piper ONNX notice ({e}), checking OS fallback...")
+            finally:
+                if os.path.exists(temp_path):
+                    try:
+                        os.remove(temp_path)
+                    except Exception:
+                        pass
 
-        with tempfile.NamedTemporaryFile(suffix=".wav", delete=False) as tf:
-            temp_path = tf.name
-
+        # 2. Native Windows SAPI fallback if win32com is present
         try:
-            sp = win32com.client.Dispatch("SAPI.SpVoice")
-            
-            # Select gender
-            target_gender = preset.get("offline_gender", "male").lower()
-            voices = sp.GetVoices()
-            for v in voices:
-                desc = v.GetDescription().lower()
-                if target_gender == "female" and ("zira" in desc or "female" in desc):
-                    sp.Voice = v
-                    break
-                elif target_gender == "male" and ("david" in desc or "male" in desc):
-                    sp.Voice = v
-                    break
+            import win32com.client
+            with tempfile.NamedTemporaryFile(suffix=".wav", delete=False) as tf:
+                temp_path = tf.name
 
-            # Rate: SAPI Rate is integer from -10 to +10 (0 is normal)
-            # speed_mult 1.0 -> 0; 0.5 -> -5; 2.0 -> +7
-            sapi_rate = int(round((speed_mult - 1.0) * 10))
-            sp.Rate = max(-10, min(10, sapi_rate))
+            try:
+                sp = win32com.client.Dispatch("SAPI.SpVoice")
+                target_gender = preset.get("offline_gender", "male").lower()
+                voices = sp.GetVoices()
+                for v in voices:
+                    desc = v.GetDescription().lower()
+                    if target_gender == "female" and ("zira" in desc or "female" in desc):
+                        sp.Voice = v
+                        break
+                    elif target_gender == "male" and ("david" in desc or "male" in desc):
+                        sp.Voice = v
+                        break
 
-            # Stream to file
-            stream = win32com.client.Dispatch("SAPI.SpFileStream")
-            # 3 = SSFMCreateForWrite (overwrite if exists)
-            stream.Open(temp_path, 3, False)
-            sp.AudioOutputStream = stream
-            sp.Speak(text)
-            stream.Close()
+                sapi_rate = int(round((speed_mult - 1.0) * 10))
+                sp.Rate = max(-10, min(10, sapi_rate))
 
-            data, sr = sf.read(temp_path)
-            if data.ndim > 1:
-                data = np.mean(data, axis=1)
-            return data.astype(np.float32), sr
-        finally:
-            if os.path.exists(temp_path):
-                try:
-                    os.remove(temp_path)
-                except Exception:
-                    pass
+                stream = win32com.client.Dispatch("SAPI.SpFileStream")
+                stream.Open(temp_path, 3, False)
+                sp.AudioOutputStream = stream
+                sp.Speak(text)
+                stream.Close()
+
+                data, sr = sf.read(temp_path)
+                if data.ndim > 1:
+                    data = np.mean(data, axis=1)
+                return data.astype(np.float32), sr
+            finally:
+                if os.path.exists(temp_path):
+                    try:
+                        os.remove(temp_path)
+                    except Exception:
+                        pass
+        except Exception as e:
+            raise RuntimeError(f"Offline speech synthesis unavailable (no Piper model or SAPI voice): {e}")
 

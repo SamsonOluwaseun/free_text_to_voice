@@ -94,9 +94,40 @@ Designed in alignment with the **Samlytics Data Services** brand guidelines:
 
 ---
 
-## 💻 Manual Launch from Terminal (Optional)
+## 🤖 Headless CLI & MCP for AI Tools (Claude, ChatGPT, Gemini)
 
-If you prefer launching via command line:
+Samlytics VoiceStudio can be used completely headless by AI tools, scripts, and terminal automations:
+
+### 1. Headless CLI
+```bash
+# Synthesize speech with subtitles
+python cli.py speak "Welcome to cloud computing." --voice "Abeo" --out "exports/narration.mp3" --srt
+
+# Full story with background music and ducking
+python cli.py speak "In Lagos, engineers are building the future." --music "Lo-Fi" --ducking --out "exports/story.mp3" --srt
+```
+
+### 2. Model Context Protocol (MCP) for Claude Desktop
+Connect VoiceStudio directly into Claude Desktop by adding this to `claude_desktop_config.json`:
+```json
+{
+  "mcpServers": {
+    "voicestudio": {
+      "command": "python",
+      "args": ["<PATH_TO_VOICESTUDIO>/mcp_server.py"]
+    }
+  }
+}
+```
+
+### 3. 🇳🇬 Offline Nigerian Voice Distillation (`en_NG-abeo.onnx`)
+Run the turnkey Google Colab notebook `train_offline_abeo.ipynb` on a free T4 GPU to distill the Nigerian Abeo voice into an offline ~45MB Piper ONNX model. Place the resulting files into `offline_models/` for 100% offline speech!
+
+---
+
+## 💻 Launch Desktop GUI App
+
+To launch the desktop interface:
 ```powershell
 python app.py
 ```
