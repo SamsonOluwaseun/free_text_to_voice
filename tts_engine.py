@@ -165,7 +165,7 @@ class TTSEngine:
         falling back to native Windows SAPI speech.
         """
         # 1. Try local Piper ONNX neural engine
-        if self.offline_engine and self.offline_engine.is_ready():
+        if self.offline_engine:
             with tempfile.NamedTemporaryFile(suffix=".wav", delete=False) as tf:
                 temp_path = tf.name
             try:
