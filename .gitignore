@@ -12,6 +12,7 @@ exports/*.wav
 custom_voices/*.wav
 custom_voices/*.mp3
 custom_voices/*.m4a
+custom_voices/profile.json
 !custom_voices/.gitkeep
 
 # Temporary files

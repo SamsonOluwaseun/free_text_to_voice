@@ -22,7 +22,7 @@ from tts_engine import TTSEngine, VOICE_PRESETS
 from audio_mixer import AudioMixer
 from player import AudioPlayer
 from tracks_generator import ensure_starter_tracks
-from voice_cloner import VoiceCloner
+from voice_cloner import VoiceCloner, load_audio_file
 from recorder import AudioRecorder
 from subtitle_engine import SubtitleEngine
 from model_manager import ModelManager
@@ -103,7 +103,7 @@ class VoiceStudioApp(ctk.CTk):
         self.cloner = VoiceCloner(self.custom_voices_dir)
         self.mixer = AudioMixer(self.tracks_dir)
         self.player = AudioPlayer(on_finish_callback=self._on_player_finish)
-        self.sample_player = AudioPlayer()
+        self.sample_player = AudioPlayer(on_finish_callback=self._on_sample_player_finish)
         self.recorder = AudioRecorder(sample_rate=24000)
 
         # Audio state
@@ -372,6 +372,7 @@ class VoiceStudioApp(ctk.CTk):
 
         # Custom Voice Card (inside sec1_frame, directly below voice selector and before Section 2)
         self.custom_voice_box = ctk.CTkFrame(self.sec1_frame, corner_radius=10, fg_color="#F8FAFC", border_width=1, border_color=BORDER_COLOR)
+        self.custom_voice_box.pack(fill="x", padx=12, pady=(4, 10))
         
         cv_header = ctk.CTkFrame(self.custom_voice_box, fg_color="transparent")
         cv_header.pack(fill="x", padx=12, pady=(8, 2))
@@ -383,6 +384,19 @@ class VoiceStudioApp(ctk.CTk):
             text_color=SAM_DARK
         )
         cv_title.pack(side="left")
+
+        self.btn_select_custom_voice = ctk.CTkButton(
+            cv_header,
+            text="🎯 Use My Voice",
+            width=110,
+            height=24,
+            fg_color="#EFF6FF",
+            hover_color="#DBEAFE",
+            text_color=SAM_BLUE,
+            font=ctk.CTkFont(size=11, weight="bold"),
+            command=lambda: (self.voice_var.set(CUSTOM_VOICE_LABEL), self._on_voice_selected(CUSTOM_VOICE_LABEL))
+        )
+        self.btn_select_custom_voice.pack(side="right")
 
         self.custom_voice_status_label = ctk.CTkLabel(
             self.custom_voice_box,
@@ -453,6 +467,23 @@ class VoiceStudioApp(ctk.CTk):
             command=self._preview_custom_voice_sample
         )
         self.btn_preview_sample.pack(side="left")
+
+        # Training / Calibration Action Row
+        train_row = ctk.CTkFrame(self.custom_voice_box, fg_color="transparent")
+        train_row.pack(fill="x", padx=12, pady=(0, 6))
+
+        self.btn_train_voice = ctk.CTkButton(
+            train_row,
+            text="🧠 Train Voice Profile",
+            height=32,
+            fg_color="#7C3AED",
+            hover_color="#6D28D9",
+            text_color="#FFFFFF",
+            font=ctk.CTkFont(size=12, weight="bold"),
+            state="disabled",
+            command=self._on_train_custom_voice
+        )
+        self.btn_train_voice.pack(fill="x")
 
         # Deep AI Upgrade Section (Optional Tier 2)
         deep_frame = ctk.CTkFrame(self.custom_voice_box, fg_color="#FFFFFF", corner_radius=8, border_width=1, border_color="#CBD5E1")
@@ -854,31 +885,54 @@ class VoiceStudioApp(ctk.CTk):
             self.voice_desc_label.configure(
                 text="Synthesizes speech using your custom voice timbre, pitch, and acoustic resonance."
             )
-            self.custom_voice_box.pack(fill="x", padx=12, pady=(2, 10))
-            self._update_custom_voice_status()
         else:
-            self.custom_voice_box.pack_forget()
             preset = VOICE_PRESETS.get(choice, {})
             desc = preset.get("description", "")
             self.voice_desc_label.configure(text=desc)
+        self._update_custom_voice_status()
 
     def _update_custom_voice_status(self):
         profile = self.cloner.get_profile_info()
+        is_custom_selected = (self.voice_var.get() == CUSTOM_VOICE_LABEL)
+
+        if hasattr(self, "custom_voice_box"):
+            if is_custom_selected:
+                self.custom_voice_box.configure(border_color=SAM_BLUE, border_width=2)
+            else:
+                self.custom_voice_box.configure(border_color=BORDER_COLOR, border_width=1)
+
+        if hasattr(self, "btn_select_custom_voice"):
+            if is_custom_selected:
+                self.btn_select_custom_voice.configure(text="● Active Voice", fg_color=SAM_BLUE, text_color="#FFFFFF")
+            else:
+                self.btn_select_custom_voice.configure(text="🎯 Use My Voice", fg_color="#EFF6FF", text_color=SAM_BLUE)
+
         if profile and self.cloner.has_uploaded_voice() and hasattr(self, "custom_voice_status_label"):
             fname = profile.get("original_filename", "Custom Sample")
             pitch = profile.get("median_pitch_hz", "N/A")
             dur = profile.get("duration_sec", "N/A")
+            is_deep = ModelManager.is_deep_engine_installed()
+            mode_tag = "🚀 Deep Neural Clone" if is_deep else "⚡ Fast Timbre Cloner"
+            status_tag = "✅ Ready for Conversion" if profile.get("trained") else "👉 Click 'Train Voice' to Calibrate"
+
             self.custom_voice_status_label.configure(
-                text=f"✅ Active Voice: {fname}\nPitch: {pitch} Hz • Duration: {dur}s • Base: {profile.get('base_preset', '')}",
+                text=f"🎙️ Active Sample: {fname}\nPitch: {pitch} Hz • Duration: {dur}s • Mode: {mode_tag}\n{status_tag}",
                 text_color="#059669"
             )
             self.btn_preview_sample.configure(state="normal")
+            if hasattr(self, "btn_train_voice"):
+                self.btn_train_voice.configure(
+                    state="normal",
+                    text="✅ Re-Train / Calibrate Voice" if profile.get("trained") else "🧠 Train Voice Profile"
+                )
         elif hasattr(self, "custom_voice_status_label"):
             self.custom_voice_status_label.configure(
-                text="Record or upload audio (5-30s) to clone your voice.",
+                text="Record or upload audio (MP3, WAV, M4A) to train your custom voice.",
                 text_color=TEXT_MUTED
             )
             self.btn_preview_sample.configure(state="disabled")
+            if hasattr(self, "btn_train_voice"):
+                self.btn_train_voice.configure(state="disabled", text="🧠 Train Voice Profile")
 
         if hasattr(self, "deep_status_label"):
             if ModelManager.is_deep_engine_installed():
@@ -915,14 +969,19 @@ class VoiceStudioApp(ctk.CTk):
                 if dur < 2.0:
                     messagebox.showwarning("Recording Too Short", "Please record for at least 5-10 seconds for accurate voice cloning.")
                     return
-                profile = self.cloner.register_uploaded_voice(temp_rec_path, voice_name="My Mic Recording")
+                profile = self.cloner.register_uploaded_voice(
+                    temp_rec_path,
+                    voice_name="My Mic Recording",
+                    reading_text=MIC_READING_PROMPT
+                )
+                self.voice_var.set(CUSTOM_VOICE_LABEL)
+                self._on_voice_selected(CUSTOM_VOICE_LABEL)
                 self._update_custom_voice_status()
                 messagebox.showinfo(
-                    "Voice Cloned Successfully",
+                    "Voice Recorded Successfully",
                     f"Captured {dur:.1f}s of your voice!\n"
-                    f"Detected pitch: {profile['median_pitch_hz']} Hz\n"
-                    f"Matched vocal register: {profile['base_preset']}\n\n"
-                    "Your personal voice profile is now active and ready for conversion!"
+                    f"Detected pitch: {profile['median_pitch_hz']} Hz\n\n"
+                    "👉 Click '🧠 Train Voice Profile' below to calibrate your neural voice model!"
                 )
             except Exception as e:
                 messagebox.showerror("Recording Error", f"Could not save voice recording:\n{e}")
@@ -937,39 +996,100 @@ class VoiceStudioApp(ctk.CTk):
 
     def _upload_custom_voice(self):
         filetypes = [
-            ("Audio Files", "*.mp3 *.wav *.m4a *.flac *.ogg"),
-            ("MP3 Audio", "*.mp3"),
-            ("WAV Audio", "*.wav"),
+            ("Supported Audio Files (*.mp3, *.wav, *.m4a)", "*.mp3 *.wav *.m4a *.aac *.ogg *.flac"),
+            ("M4A Voice Recording (*.m4a)", "*.m4a"),
+            ("MP3 Audio (*.mp3)", "*.mp3"),
+            ("WAV Audio (*.wav)", "*.wav"),
             ("All Files", "*.*")
         ]
         chosen = filedialog.askopenfilename(
-            title="Select Your Voice Recording (5-30 seconds)",
+            title="Select Your Voice Recording (MP3, WAV, M4A)",
             filetypes=filetypes
         )
         if chosen:
             try:
                 profile = self.cloner.register_uploaded_voice(chosen)
+                self.voice_var.set(CUSTOM_VOICE_LABEL)
+                self._on_voice_selected(CUSTOM_VOICE_LABEL)
                 self._update_custom_voice_status()
                 messagebox.showinfo(
-                    "Voice Upload Successful",
-                    f"Analyzed '{profile['original_filename']}'!\n"
-                    f"Detected pitch: {profile['median_pitch_hz']} Hz\n"
-                    f"Matched vocal register: {profile['base_preset']}\n\n"
-                    "Your custom voice profile is now active and ready for speech conversion!"
+                    "Voice Uploaded Successfully",
+                    f"Loaded '{profile['original_filename']}' ({profile['duration_sec']}s)!\n"
+                    f"Measured pitch: {profile['median_pitch_hz']} Hz\n\n"
+                    "👉 Click '🧠 Train Voice Profile' below to calibrate your voice model for speech conversion!"
                 )
             except Exception as e:
                 messagebox.showerror("Voice Upload Error", f"Could not analyze audio file:\n{e}")
 
+    def _on_train_custom_voice(self):
+        if not self.cloner.has_uploaded_voice():
+            messagebox.showwarning("No Voice Sample", "Please record or upload an audio sample first.")
+            return
+
+        self.btn_train_voice.configure(state="disabled", text="⏳ Training & Calibrating...")
+        self.status_label.configure(text="Extracting vocal acoustic features and calibrating neural model...")
+
+        def _prog(msg):
+            self.after(0, lambda: self.status_label.configure(text=msg))
+
+        def _worker():
+            try:
+                profile = self.cloner.train_voice_profile(on_progress=_prog)
+                self.after(0, lambda: (
+                    self.voice_var.set(CUSTOM_VOICE_LABEL),
+                    self._on_voice_selected(CUSTOM_VOICE_LABEL),
+                    self._update_custom_voice_status(),
+                    self.status_label.configure(text="Voice model trained! Type your text and click 'Convert to Voice' below."),
+                    messagebox.showinfo(
+                        "Voice Training Complete",
+                        f"Personal voice profile for '{profile.get('original_filename', 'Voice')}' calibrated successfully!\n\n"
+                        f"• Fundamental Pitch: {profile.get('median_pitch_hz')} Hz\n"
+                        f"• Engine: {'🚀 Deep AI Neural Model' if profile.get('mode') == 'deep_neural' else '⚡ Fast Acoustic Cloner'}\n\n"
+                        "Your cloned voice is now active. Type your script and click 'Convert to Voice' to speak in your voice!"
+                    )
+                ))
+            except Exception as e:
+                self.after(0, lambda: (
+                    self._update_custom_voice_status(),
+                    self.status_label.configure(text="Voice training notice."),
+                    messagebox.showerror("Training Error", f"Could not complete voice training:\n{e}")
+                ))
+
+        threading.Thread(target=_worker, daemon=True).start()
+
     def _preview_custom_voice_sample(self):
+        if self.sample_player.is_playing:
+            self.sample_player.stop()
+            self.btn_preview_sample.configure(
+                text="🔊 Listen",
+                fg_color="#E2E8F0",
+                hover_color="#CBD5E1",
+                text_color=SAM_DARK
+            )
+            return
+
         profile = self.cloner.get_profile_info()
         if profile and os.path.exists(profile.get("sample_path", "")):
             try:
-                import soundfile as sf
-                data, sr = sf.read(profile["sample_path"])
+                data, sr = load_audio_file(profile["sample_path"])
                 self.sample_player.load(data, sr)
                 self.sample_player.play()
+                self.btn_preview_sample.configure(
+                    text="⏹ Stop",
+                    fg_color="#DC2626",
+                    hover_color="#B91C1C",
+                    text_color="#FFFFFF"
+                )
             except Exception as e:
                 messagebox.showerror("Playback Error", f"Could not play sample audio:\n{e}")
+
+    def _on_sample_player_finish(self):
+        self.after(0, lambda: self.btn_preview_sample.configure(
+            text="🔊 Listen",
+            fg_color="#E2E8F0",
+            hover_color="#CBD5E1",
+            text_color=SAM_DARK
+        ))
 
     def _prompt_deep_ai_install(self):
         specs = ModelManager.get_system_requirements()
