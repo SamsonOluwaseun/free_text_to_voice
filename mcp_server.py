@@ -226,13 +226,10 @@ def handle_create_story_narration(args):
 
     mixer = AudioMixer()
     tracks = mixer.get_available_tracks()
-    matched_track_name = None
-    for tname in tracks:
-        if music_track.lower() in tname.lower():
-            matched_track_name = tname
-            break
+    matched_track_name = mixer.resolve_track_name(music_track)
     if not matched_track_name and tracks:
-        matched_track_name = list(tracks.keys())[0]
+        valid_tracks = [t for t in tracks if tracks[t]]
+        matched_track_name = valid_tracks[0] if valid_tracks else list(tracks.keys())[0]
 
     final_audio, final_sr = mixer.mix(
         speech_data=speech_data,

@@ -83,13 +83,14 @@ If you ever want to uninstall Samlytics VoiceStudio, you can do it in two easy w
   * Crisp, engaging, articulate delivery built specifically for tutorials, tech explainers, and teaching data/software concepts to non-technical audiences.
   * Includes a 1-click **"💡 Tech Tutorial"** template demonstrating how to explain concepts like cloud computing and APIs using everyday real-world analogies.
 
-### 2. 🎙️ Custom Voice Cloning (Live Mic & Audio Upload)
-* **Live In-App Microphone Recording**: Click **"🔴 Record from Mic"**, record 5–30 seconds of your voice directly in the app with real-time countdown, and clone immediately!
-* **Audio File Upload**: Or upload an existing `.wav` or `.mp3` sample.
-* **Instant Acoustic Timbre Morphing**: Analyzes your pitch ($F_0$), formant resonant frequencies, and energy profile to read out any script in your own personal voice.
+### 2. 🎙️ Custom Voice Cloning & Neural Training
+* **Multi-Format Audio Upload**: Upload any voice recording in **`.m4a`**, **`.mp3`**, **`.wav`**, **`.aac`**, **`.flac`**, or **`.ogg`** format (auto-decoded and normalized via FFmpeg).
+* **Live In-App Microphone Recording**: Click **"🔴 Record from Mic"**, record 5–30 seconds of your voice directly in the app with real-time countdown.
+* **Interactive Sample Preview**: Audition your uploaded recording with instant **"🔊 Listen" / "⏹ Stop"** playback toggle.
+* **🧠 Train / Calibrate Voice Profile**: Dedicated 1-click voice calibration extracts the cleanest acoustic reference segment, transcribes it with Whisper, profiles pitch & formant resonance, and primes the deep neural engine.
 * **Two-Tier Architecture**:
-  * **Tier 1 (Default - Instant)**: Lightweight acoustic timbre matching. Zero huge model downloads; runs in seconds on any standard laptop CPU.
-  * **Tier 2 (Optional - Deep Neural)**: Optional in-app upgrade for heavy neural cloning weights with upfront disk/RAM requirement checks.
+  * **Tier 1 (Instant Acoustic Cloner)**: Lightweight formant, pitch ($F_0$), and spectral envelope morphing. Zero heavy downloads; runs instantly on any standard laptop CPU.
+  * **Tier 2 (Deep Neural F5-TTS)**: State-of-the-art Flow-Matching Diffusion Transformer for zero-shot neural voice cloning. Generates speech that sounds genuinely like you directly on CPU or GPU with zero cloud subscriptions.
 
 ### 3. 🎬 Precision `.SRT` Subtitle Export
 * Export synchronized sentence-by-sentence `.SRT` subtitle files alongside your narration.

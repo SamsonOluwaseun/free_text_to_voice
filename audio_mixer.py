@@ -10,6 +10,7 @@ Handles:
 """
 
 import os
+import re
 import shutil
 import numpy as np
 import soundfile as sf
@@ -46,6 +47,23 @@ class AudioMixer:
                     tracks[display_name] = full_path
                     
         return tracks
+
+    def resolve_track_name(self, query: str) -> str | None:
+        """
+        Fuzzy matches query against available tracks, ignoring hyphens, underscores, spaces, and case.
+        Example: 'Lo-Fi' -> 'Lofi Night', 'piano' -> 'Ethereal Piano', 'strings' -> 'Cinematic Strings'.
+        """
+        if not query:
+            return None
+        tracks = self.get_available_tracks()
+        q_norm = re.sub(r'[\s\-_]', '', query.lower())
+        for tname in tracks:
+            if not tname or tname == "None (Voice Only)":
+                continue
+            t_norm = re.sub(r'[\s\-_]', '', tname.lower())
+            if q_norm in t_norm or t_norm in q_norm:
+                return tname
+        return None
 
     def import_track(self, source_path: str) -> str:
         """

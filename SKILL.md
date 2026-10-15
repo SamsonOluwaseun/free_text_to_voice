@@ -79,6 +79,16 @@ VoiceStudio supports offline neural voice models via **Piper ONNX**:
 
 ---
 
+## 🎙️ 4. Custom Voice Cloning & Neural Training
+
+VoiceStudio includes zero-shot neural voice cloning and calibration:
+- **Audio Formats Supported**: `.m4a`, `.mp3`, `.wav`, `.aac`, `.flac`, `.ogg`
+- **In-App Mic Recording**: Record 5–30 seconds of speech directly in the desktop app.
+- **Voice Training & Calibration**: Dedicated 1-click calibration extracts the cleanest 6–12s acoustic reference, auto-transcribes it via Whisper, and caches the F5-TTS Flow-Matching Diffusion Transformer weights.
+- **Privacy & Execution**: Zero cloud API dependencies; neural inference executes 100% locally on your machine.
+
+---
+
 ## 🎛️ Voice Options Reference
 
 | Name | ID | Description |
@@ -88,4 +98,5 @@ VoiceStudio supports offline neural voice models via **Piper ONNX**:
 | **Soft Male** | `en-US-AndrewNeural` | Gentle, warm storytelling acoustic tone |
 | **Professional Female 1** | `en-US-AvaNeural` | Smooth, warm conversational voice for podcasts & audiobooks |
 | **Professional Female 2** | `en-US-AriaNeural` | Crisp executive tone for presentations & news |
+| **Custom Cloned Voice** | `🎯 My Cloned Voice` | Personal neural voice clone (Tier 1 Acoustic or Tier 2 F5-TTS Neural) |
 

@@ -70,19 +70,13 @@ def cmd_speak(args):
     final_sr = sr
 
     if args.music:
-        tracks = mixer.get_available_tracks()
-        matched_track = None
-        for tname, tpath in tracks.items():
-            if args.music.lower() in tname.lower():
-                matched_track = (tname, tpath)
-                break
-
-        if matched_track:
-            print(f"[*] Mixing background track: {matched_track[0]} (Vol: {args.music_vol*100:.0f}%)")
+        matched_name = mixer.resolve_track_name(args.music)
+        if matched_name:
+            print(f"[*] Mixing background track: {matched_name} (Vol: {args.music_vol*100:.0f}%)")
             final_audio, final_sr = mixer.mix(
                 speech_data=speech_audio,
                 speech_sr=sr,
-                music_name=matched_track[0],
+                music_name=matched_name,
                 music_volume=args.music_vol,
                 speech_volume=args.speech_vol,
                 ducking=args.ducking
